@@ -1665,25 +1665,31 @@ def install(
     while targets:
         cmd = cmd_install + targets[:500]
         targets = targets[500:]
-        for line in (
-            __zypper__(
-                no_repo_failure=ignore_repo_failure,
-                systemd_scope=systemd_scope,
-                root=root,
-            )
-            .call(*cmd)
-            .splitlines()
-        ):
-            match = re.match(
-                r"^The selected package '([^']+)'.+has lower version", line
-            )
-            if match:
-                downgrades.append(match.group(1))
+        try:
+            for line in (
+                __zypper__(
+                    no_repo_failure=ignore_repo_failure,
+                    systemd_scope=systemd_scope,
+                    root=root,
+                )
+                .call(*cmd)
+                .splitlines()
+            ):
+                match = re.match(
+                    r"^The selected package '([^']+)'.+has lower version", line
+                )
+                if match:
+                    downgrades.append(match.group(1))
+        except CommandExecutionError:
+            raise CommandExecutionError(' '.join([__zypper__.stdout + ' ' + __zypper__.stderr]))
 
     while downgrades:
         cmd = cmd_install + ["--force"] + downgrades[:500]
         downgrades = downgrades[500:]
-        __zypper__(no_repo_failure=ignore_repo_failure, root=root).call(*cmd)
+        try:
+            __zypper__(no_repo_failure=ignore_repo_failure, root=root).call(*cmd)
+        except CommandExecutionError:
+            raise CommandExecutionError(' '.join([__zypper__.stdout + ' ' + __zypper__.stderr]))
 
     _clean_cache()
     new = (

@@ -1334,6 +1334,33 @@ Repository 'DUMMY' not found by its alias, number, or URI.
                     },
                 )
 
+    def test_install_with_errors(self):
+        """
+        Test a package installation with downloadonly=True.
+
+        :return:
+        """
+        # import pdb; pdb.set_trace()
+        with patch.dict(
+            zypper.__salt__,
+            {
+                "pkg_resource.parse_targets": MagicMock(
+                    return_value=({"foo": None}, "repository")
+                ),
+                "lowpkg.bin_pkg_info": MagicMock(
+                    return_value={"name": "foo", "version": "1.0"}
+                ),
+                "config.get": MagicMock(return_value=True),
+            },
+        ):
+            with patch(
+                # "salt.modules.zypperpkg.__zypper__.noraise.call", MagicMock()
+                "salt.modules.zypperpkg.__zypper__.call", Mock(side_effect=CommandExecutionError)
+            ) as zypper_mock, patch("salt.modules.zypperpkg.__zypper__._Zypper__call_result",
+                                    {'stdout': '', 'stderr': ''}):
+                with self.assertRaises(CommandExecutionError):
+                    ret = zypper.install(pkgs=["foo"], downloadonly=True)
+
     @patch("salt.modules.zypperpkg._systemd_scope", MagicMock(return_value=False))
     @patch(
         "salt.modules.zypperpkg.list_downloaded",
