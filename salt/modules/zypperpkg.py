@@ -1666,30 +1666,33 @@ def install(
         cmd = cmd_install + targets[:500]
         targets = targets[500:]
         try:
-            for line in (
-                __zypper__(
-                    no_repo_failure=ignore_repo_failure,
-                    systemd_scope=systemd_scope,
-                    root=root,
-                )
-                .call(*cmd)
-                .splitlines()
-            ):
+            __zypper__(
+                no_repo_failure=ignore_repo_failure,
+                systemd_scope=systemd_scope,
+                root=root,
+            ).xml().call(*cmd)
+
+            messages = dom.parseString(__zypper__.stdout).getElementsByTagName('message')
+            for msg in messages:
                 match = re.match(
-                    r"^The selected package '([^']+)'.+has lower version", line
+                    r"^The selected package '([^']+)'.+has lower version", msg.firstChild.nodeValue
                 )
                 if match:
                     downgrades.append(match.group(1))
+
         except CommandExecutionError:
-            raise CommandExecutionError(' '.join([__zypper__.stdout + ' ' + __zypper__.stderr]))
+            messages = dom.parseString(__zypper__.stdout).getElementsByTagName('message')
+            for msg in messages:
+                if msg.getAttribute("type") == "error":
+                    errors.append(msg)
+            if errors:
+                error_msg = ' '.join([error.firstChild.nodeValue for error in errors])
+                raise CommandExecutionError(error_msg)
 
     while downgrades:
         cmd = cmd_install + ["--force"] + downgrades[:500]
         downgrades = downgrades[500:]
-        try:
-            __zypper__(no_repo_failure=ignore_repo_failure, root=root).call(*cmd)
-        except CommandExecutionError:
-            raise CommandExecutionError(' '.join([__zypper__.stdout + ' ' + __zypper__.stderr]))
+        __zypper__(no_repo_failure=ignore_repo_failure, root=root).call(*cmd)
 
     _clean_cache()
     new = (
