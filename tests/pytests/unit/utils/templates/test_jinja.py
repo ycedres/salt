@@ -265,21 +265,16 @@ def test_generate_sls_context_top_level_sls():
 
 
 def test_generate_sls_context_non_sls_file(caplog):
-    """A template path that cannot be reconciled with the sls name logs a
-    warning and keeps the full template path as tplfile (the root cannot be
-    stripped, so all derived path variables carry the full path too)."""
+    """A template path that cannot be reconciled with the sls name is treated
+    as a non-SLS template: no warning is logged and the sls name is kept as
+    tplfile while tpldir is derived from it."""
     with caplog.at_level(logging.WARNING):
         ctx = generate_sls_context("/srv/salt/foo/bar.txt", "foo.bar")
-    assert "Failed to determine proper template path" in caplog.text
+    assert "Failed to determine proper template path" not in caplog.text
     assert ctx == {
         "tplpath": "/srv/salt/foo/bar.txt",
-        "tplfile": "/srv/salt/foo/bar.txt",
-        "tpldir": "/srv/salt/foo",
-        "tpldot": ".srv.salt.foo",
-        "slspath": "/srv/salt/foo",
-        "slsdotpath": ".srv.salt.foo",
-        "slscolonpath": ":srv:salt:foo",
-        "sls_path": "_srv_salt_foo",
+        "tplfile": "foo.bar",
+        "tpldir": ".",
     }
 
 

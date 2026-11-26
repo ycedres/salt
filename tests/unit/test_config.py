@@ -82,12 +82,15 @@ class SampleConfTest(DefaultConfigsBase, TestCase):
         """
         The sample config file located in salt/conf/master must be completely
         commented out. This test checks for any lines that are not commented or blank.
+
+        This branch intentionally ships an uncommented ``user``/``syndic_user``
+        pair so that the master runs as the dedicated ``salt`` user.
         """
         master_config = SAMPLE_CONF_DIR + "master"
         ret = salt.config._read_conf_file(master_config)
         self.assertEqual(
             ret,
-            {},
+            {"user": "salt", "syndic_user": "salt"},
             f"Sample config file '{master_config}' must be commented out.",
         )
 

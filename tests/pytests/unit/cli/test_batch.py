@@ -5,7 +5,7 @@ Unit Tests for the salt.cli.batch module
 import pytest
 
 from salt.cli.batch import Batch, batch_get_opts, get_bnum
-from tests.support.mock import MagicMock, patch
+from tests.support.mock import ANY, MagicMock, patch
 
 
 @pytest.fixture
@@ -90,7 +90,7 @@ def test_return_value_in_run_for_ret(batch):
     # We need to fetch at least one object to trigger the relevant code path.
     x = next(ret)
     batch.local.cmd_iter_no_block.assert_called_with(
-        ["baz", "bar", "foo"],
+        ["foo", "bar", "baz"],
         "test",
         "foo",
         5,
@@ -100,6 +100,7 @@ def test_return_value_in_run_for_ret(batch):
         show_jid=False,
         verbose=False,
         gather_job_timeout=5,
+        jid=ANY,
     )
 
 
@@ -124,7 +125,7 @@ def test_return_value_in_run_for_return(batch):
     # We need to fetch at least one object to trigger the relevant code path.
     x = next(ret)
     batch.local.cmd_iter_no_block.assert_called_with(
-        ["baz", "bar", "foo"],
+        ["foo", "bar", "baz"],
         "test",
         "foo",
         5,
@@ -134,6 +135,7 @@ def test_return_value_in_run_for_return(batch):
         show_jid=False,
         verbose=False,
         gather_job_timeout=5,
+        jid=ANY,
     )
 
 

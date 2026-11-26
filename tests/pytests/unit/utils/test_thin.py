@@ -14,6 +14,7 @@ import types
 import jinja2
 import pytest
 
+import salt
 import salt.exceptions
 import salt.utils.hashutils
 import salt.utils.json
@@ -53,10 +54,14 @@ class ThinTestContext:
     def __init__(self, tmp_path):
         self.jinja_fp = os.path.dirname(jinja2.__file__)
 
+        # ``CODE_DIR`` points at the test-suite root, which is not
+        # necessarily the directory containing the ``salt`` package (for
+        # example when the test suite is installed as a separate package).
+        salt_pkg_dir = pathlib.Path(salt.__file__).resolve().parent
         self.ext_conf = {
             "test": {
                 "py-version": [2, 7],
-                "path": str(CODE_DIR / "salt"),
+                "path": str(salt_pkg_dir),
                 "dependencies": {"jinja2": self.jinja_fp},
             }
         }

@@ -321,7 +321,10 @@ def test_info():
         }
     )
 
-    with patch.dict(dpkg.__salt__, {"cmd.run_all": mock}), patch.dict(
+    with patch.dict(
+        dpkg.__salt__,
+        {"cmd.run_all": mock, "cmd.run": MagicMock(return_value="")},
+    ), patch.dict(
         dpkg.__grains__, {"os": "Ubuntu", "osrelease_info": (18, 4)}
     ), patch("salt.utils.path.which", MagicMock(return_value=False)), patch(
         "os.path.exists", MagicMock(return_value=False)
@@ -406,7 +409,11 @@ def test_info_uses_dpkg_query_only(tmp_path):
     # The dpkg-query call must be passed as a list (no shell), and dselect
     # is mocked absent so dpkg-query --print-avail is not invoked.
     with patch.dict(
-        dpkg.__salt__, {"cmd.run_all": MagicMock(side_effect=fake_run_all)}
+        dpkg.__salt__,
+        {
+            "cmd.run_all": MagicMock(side_effect=fake_run_all),
+            "cmd.run": MagicMock(return_value=""),
+        },
     ), patch.dict(dpkg.__grains__, {"os": "Ubuntu", "osrelease_info": (18, 4)}), patch(
         "salt.utils.path.which", MagicMock(return_value=False)
     ), patch(
@@ -466,7 +473,10 @@ def test_info_handles_missing_install_date():
             ),
         }
     )
-    with patch.dict(dpkg.__salt__, {"cmd.run_all": mock}), patch.dict(
+    with patch.dict(
+        dpkg.__salt__,
+        {"cmd.run_all": mock, "cmd.run": MagicMock(return_value="")},
+    ), patch.dict(
         dpkg.__grains__, {"os": "Ubuntu", "osrelease_info": (18, 4)}
     ), patch("salt.utils.path.which", MagicMock(return_value=False)), patch(
         "os.path.exists", MagicMock(return_value=False)

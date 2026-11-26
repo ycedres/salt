@@ -1593,6 +1593,7 @@ def test_yumpkg_group_installed_with_repo_options(
             expected,
             output_loglevel="trace",
             python_shell=False,
+            env={"SALT_RUNNING": "1"},
         )
 
 

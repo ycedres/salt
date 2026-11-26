@@ -515,11 +515,11 @@ def minion_mods(
         __module__ = type(ret).__module__
 
         def __setitem__(self, key, val):
-            LazyLoader.__setitem__(self, key, val)
+            _LazyLoader.__setitem__(self, key, val)
             _salt_dunder._dict[key] = val
 
         def __delitem__(self, key):
-            LazyLoader.__delitem__(self, key)
+            _LazyLoader.__delitem__(self, key)
             _salt_dunder._dict.pop(key, None)
 
     ret.__class__ = _WriteThroughLoader
@@ -533,7 +533,7 @@ def minion_mods(
     ret._dunder_salt = salt_dunder
 
     # Allow the usage of salt dunder in utils modules.
-    if utils and isinstance(utils, LazyLoader):
+    if utils and isinstance(utils, _LazyLoader):
         utils.pack["__salt__"] = salt_dunder
 
     # Load any provider overrides from the configuration file providers option

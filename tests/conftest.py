@@ -952,7 +952,7 @@ def groups_collection_modifyitems(config, items):
 
 # ----- Fixtures Overrides ------------------------------------------------------------------------------------------>
 @pytest.fixture(scope="session")
-def salt_factories_default_root_dir(salt_factories_default_root_dir):
+def salt_factories_default_root_dir(tmp_path_factory):
     """
     The root directory from where to base all salt-factories paths.
 
@@ -963,6 +963,13 @@ def salt_factories_default_root_dir(salt_factories_default_root_dir):
         If `root_dir` is returned on the `salt_factories_config()` fixture
         dictionary, then that's the value used, and not the one returned by
         this fixture.
+
+    .. note::
+
+        Recent versions of pytest-salt-factories no longer provide the
+        ``salt_factories_default_root_dir`` fixture this one used to
+        override. Deriving the directory directly keeps the fixture
+        usable regardless of the installed pytest-salt-factories version.
     """
     if os.environ.get("CI") and pytestskipmarkers.utils.platform.is_windows():
         tempdir = pathlib.Path(
@@ -975,7 +982,7 @@ def salt_factories_default_root_dir(salt_factories_default_root_dir):
     env_root = os.environ.get("SALT_PYTEST_FACTORIES_ROOT")
     if env_root:
         return pathlib.Path(env_root)
-    return salt_factories_default_root_dir / "stsuite"
+    return tmp_path_factory.mktemp("salt-factories") / "stsuite"
 
 
 @pytest.fixture(scope="session")

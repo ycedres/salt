@@ -1599,6 +1599,7 @@ def test_minion_keeps_schedule_on_master_reconnect(minion_opts):
                 }
 
                 minion = salt.minion.Minion(minion_opts, io_loop=io_loop)
+                minion.tok = b"tok"
                 minion.opts["schedule"] = {
                     "__mine_interval": {
                         "function": "mine.update",

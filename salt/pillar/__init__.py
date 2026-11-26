@@ -106,6 +106,7 @@ def get_async_pillar(
     pillarenv=None,
     extra_minion_data=None,
     clean_cache=False,
+    context=None,
 ):
     """
     Return the correct pillar driver based on the file_client option
@@ -132,6 +133,7 @@ def get_async_pillar(
             pillarenv=pillarenv,
             extra_minion_data=extra_minion_data,
             clean_cache=clean_cache,
+            context=context,
         )
     return ptype(
         opts,
@@ -143,6 +145,7 @@ def get_async_pillar(
         pillar_override=pillar_override,
         pillarenv=pillarenv,
         extra_minion_data=extra_minion_data,
+        context=context,
     )
 
 
@@ -221,6 +224,7 @@ class AsyncRemotePillar(RemotePillarMixin):
         pillarenv=None,
         extra_minion_data=None,
         clean_cache=False,
+        context=None,
     ):
         self.opts = opts
         self.opts["saltenv"] = saltenv
@@ -246,6 +250,7 @@ class AsyncRemotePillar(RemotePillarMixin):
         )
         self._closing = False
         self.clean_cache = clean_cache
+        self.context = context
 
     async def compile_pillar(self):
         """

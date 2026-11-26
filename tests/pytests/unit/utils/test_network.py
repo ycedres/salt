@@ -1637,7 +1637,7 @@ def test_ip_addrs(linux_interfaces_dict):
         assert ret == ["fe80::e23f:49ff:fe85:6aaf"]
 
 
-def test_is_fqdn(self):
+def test_is_fqdn():
     """
     Test is_fqdn function passes possible FQDN names.
 
@@ -1655,7 +1655,7 @@ def test_is_fqdn(self):
     ]:
         assert network.is_fqdn(fqdn)
 
-def test_is_not_fqdn(self):
+def test_is_not_fqdn():
     """
     Test is_fqdn function rejects FQDN names.
 

@@ -120,6 +120,10 @@ class Scenario:
 # Seed scenarios.  Each one is intentionally small and focused on a single
 # behavior.  When progress_batch() lands in Phase 1 step 1 these become its
 # executable specification.
+#
+# The ``covers`` references to granular sync-batch tests were dropped when
+# the async batch rewrite replaced those tests with the declarative replay
+# in ``tests/pytests/unit/cli/test_batch_parity.py``.
 # ---------------------------------------------------------------------------
 
 SCENARIOS = (
@@ -152,7 +156,7 @@ SCENARIOS = (
                 },
             ),
         ),
-        covers=("test_single_jid_across_batch_iterations",),
+        covers=(),
     ),
     Scenario(
         name="subsequent_dispatch_fills_next_sub_batch",
@@ -192,7 +196,7 @@ SCENARIOS = (
                 },
             ),
         ),
-        covers=("test_single_jid_across_batch_iterations",),
+        covers=(),
     ),
     Scenario(
         name="last_partial_sub_batch_dispatches_all_remaining",
@@ -272,7 +276,7 @@ SCENARIOS = (
                 },
             ),
         ),
-        covers=("test_single_jid_with_failhard",),
+        covers=(),
     ),
     Scenario(
         name="retcode_dict_collapses_to_max_for_failhard",
@@ -320,7 +324,7 @@ SCENARIOS = (
                 state_after={"halted": True, "halted_reason": "failhard"},
             ),
         ),
-        covers=("test_run_retcode_dict_takes_max",),
+        covers=(),
     ),
     Scenario(
         name="batch_wait_blocks_next_dispatch_until_cooldown_expires",
@@ -389,7 +393,7 @@ SCENARIOS = (
                 },
             ),
         ),
-        covers=("test_run_batch_wait_delays_next_dispatch",),
+        covers=(),
     ),
     Scenario(
         name="timeout_moves_nonresponsive_minion_to_failed",
@@ -472,6 +476,6 @@ SCENARIOS = (
                 },
             ),
         ),
-        covers=("test_single_jid_single_batch",),
+        covers=(),
     ),
 )

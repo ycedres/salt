@@ -2918,6 +2918,7 @@ def _make_async_pillar_aes_funcs(
     aes_funcs.opts["minion_data_cache"] = minion_data_cache
     aes_funcs.opts["minion_data_cache_events"] = minion_data_cache_events
     aes_funcs.opts.setdefault("pillar_version", 2)
+    aes_funcs.context = {}
 
     # ``compile_pillar`` is an ``async def`` on ``AsyncPillar``; wire it up as
     # an ``AsyncMock`` so we can assert it was awaited.
@@ -4331,88 +4332,37 @@ async def test_handle_payload_no_cap_allows_full_concurrency(master_opts):
     assert max_active == 8
 
 
-def test_mworker_pass_context():
+async def test_mworker_pass_context():
     """
-    Test of passing the __context__ to pillar ext module loader
+    The AES pillar handler must forward the worker ``__context__`` to the
+    pillar factory so ext-pillar loaders see it.
     """
-    req_channel_mock = MagicMock()
-    local_client_mock = MagicMock()
-
-    opts = {
-        "req_server_niceness": None,
-        "mworker_niceness": None,
-        "sock_dir": "/tmp",
-        "conf_file": "/tmp/fake_conf",
-        "transport": "zeromq",
-        "fileserver_backend": ["roots"],
-        "file_client": "local",
-        "pillar_cache": False,
-        "state_top": "top.sls",
-        "pillar_roots": {},
-    }
-
-    data = {
-        "id": "MINION_ID",
-        "grains": {},
-        "saltenv": None,
-        "pillarenv": None,
-        "pillar_override": {},
-        "extra_minion_data": {},
-        "ver": "2",
-        "cmd": "_pillar",
-    }
-
     test_context = {"testing": 123}
+    load = {
+        "id": "MINION_ID",
+        "grains": {"id": "MINION_ID"},
+        "saltenv": "base",
+        "ver": "2",
+    }
 
-    def mworker_bind_mock():
-        mworker.aes_funcs.run_func(data["cmd"], data)
+    aes_funcs = salt.master.AESFuncs.__new__(salt.master.AESFuncs)
+    aes_funcs.opts = {
+        "minion_data_cache": False,
+        "pillar_version": 2,
+        "pillar_cache": False,
+    }
+    aes_funcs.context = test_context
+    aes_funcs.fs_ = MagicMock()
+    aes_funcs.event = MagicMock()
+    aes_funcs.event.fire_event_async = AsyncMock()
 
-    with patch("salt.client.get_local_client", local_client_mock), patch(
-        "salt.master.ClearFuncs", MagicMock()
-    ), patch("salt.minion.MasterMinion", MagicMock()), patch(
-        "salt.utils.verify.valid_id", return_value=True
-    ), patch(
-        "salt.loader.matchers", MagicMock()
-    ), patch(
-        "salt.loader.render", MagicMock()
-    ), patch(
-        "salt.loader.utils", MagicMock()
-    ), patch(
-        "salt.loader.fileserver", MagicMock()
-    ), patch(
-        "salt.loader.minion_mods", MagicMock()
-    ), patch(
-        "salt.loader.LazyLoader", MagicMock()
-    ) as loadler_pillars_mock:
-        mworker = salt.master.MWorker(opts, {}, {}, [req_channel_mock])
+    pillar_instance = MagicMock()
+    pillar_instance.compile_pillar = AsyncMock(return_value={})
+    with patch(
+        "salt.pillar.get_async_pillar", MagicMock(return_value=pillar_instance)
+    ) as get_async_pillar_mock, patch(
+        "salt.utils.verify.valid_id", MagicMock(return_value=True)
+    ):
+        await aes_funcs._pillar(load)
 
-        with patch.object(mworker, "_MWorker__bind", mworker_bind_mock), patch.dict(
-            mworker.context, test_context
-        ):
-            mworker.run()
-            assert (
-                loadler_pillars_mock.call_args_list[0][1].get("pack").get("__context__")
-                == test_context
-            )
-
-        loadler_pillars_mock.reset_mock()
-
-        opts.update(
-            {
-                "pillar_cache": True,
-                "pillar_cache_backend": "file",
-                "pillar_cache_ttl": 1000,
-                "cachedir": "/tmp",
-            }
-        )
-
-        mworker = salt.master.MWorker(opts, {}, {}, [req_channel_mock])
-
-        with patch.object(mworker, "_MWorker__bind", mworker_bind_mock), patch.dict(
-            mworker.context, test_context
-        ), patch("salt.utils.cache.CacheFactory.factory", MagicMock()):
-            mworker.run()
-            assert (
-                loadler_pillars_mock.call_args_list[0][1].get("pack").get("__context__")
-                == test_context
-            )
+    assert get_async_pillar_mock.call_args.kwargs["context"] is test_context

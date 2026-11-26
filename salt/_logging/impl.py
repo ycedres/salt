@@ -368,12 +368,14 @@ class SaltLoggingClass(LOGGING_LOGGER_CLASS, metaclass=LoggingMixinMeta):
 
         jid = extra.pop("jid", "")
         if jid:
-            log_fmt_jid = extra.pop("log_fmt_jid")
+            log_fmt_jid = extra.pop("log_fmt_jid", DFLT_LOG_FMT_JID)
             jid = log_fmt_jid % {"jid": jid}
 
         minion_id = extra.pop("minion_id", "")
         if minion_id:
-            log_fmt_minion_id = extra.pop("log_fmt_minion_id")
+            log_fmt_minion_id = extra.pop(
+                "log_fmt_minion_id", DFLT_LOG_FMT_MINION_ID
+            )
             minion_id = log_fmt_minion_id % {"minion_id": minion_id}
 
         if not extra:

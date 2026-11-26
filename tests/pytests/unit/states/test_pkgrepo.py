@@ -593,7 +593,7 @@ def test_migrated_wrong_method():
     with patch.dict(pkgrepo.__grains__, grains), patch.dict(
         pkgrepo.__salt__, salt_mock
     ):
-        assert pkgrepo.migrated("/mnt", method_="magic") == {
+        assert pkgrepo.migrated("/mnt", method="magic") == {
             "name": "/mnt",
             "result": False,
             "changes": {},

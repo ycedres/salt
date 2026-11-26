@@ -20,6 +20,7 @@ pytestmark = [
 @pytest.fixture
 def opts(tmp_path):
     opts = salt.config.DEFAULT_MASTER_OPTS.copy()
+    opts["id"] = "master"
     opts["optimization_order"] = [0]
     opts["extension_modules"] = ""
     opts["pki_dir"] = str(tmp_path / "pki")
@@ -364,6 +365,8 @@ def test_handle_routine_single_run_invalid_retcode(opts, caplog):
 
     with patch("salt.roster.get_roster_file", MagicMock(return_value="")), patch(
         "salt.client.ssh.Single", autospec=True, return_value=single
+    ), patch("salt.client.ssh.LOG_LOCK", MagicMock()), patch(
+        "salt.loader.LOAD_LOCK", MagicMock()
     ):
         client = ssh.SSH(opts)
         que = multiprocessing.Queue()

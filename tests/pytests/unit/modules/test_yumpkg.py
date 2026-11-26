@@ -1220,7 +1220,10 @@ def test_download():
         cache_dir = os.path.join("/var/cache", yumpkg._yum(), "packages")
         cmd = ["yumdownloader", "-q", f"--destdir={cache_dir}", "spongebob"]
         mock_run.assert_called_once_with(
-            cmd, output_loglevel="trace", python_shell=False
+            cmd,
+            output_loglevel="trace",
+            python_shell=False,
+            env={"SALT_RUNNING": "1"},
         )
         expected = {"spongebob": f"{cache_dir}/spongebob-1.2.rpm"}
         assert result == expected
@@ -1248,7 +1251,10 @@ def test_download_failed():
             "patrick",
         ]
         mock_run.assert_called_once_with(
-            cmd, output_loglevel="trace", python_shell=False
+            cmd,
+            output_loglevel="trace",
+            python_shell=False,
+            env={"SALT_RUNNING": "1"},
         )
         expected = {
             "_error": "The following package(s) failed to download: patrick",
@@ -1279,7 +1285,10 @@ def test_download_to_purge():
         cache_dir = os.path.join("/var/cache", yumpkg._yum(), "packages")
         cmd = ["yumdownloader", "-q", f"--destdir={cache_dir}", "spongebob"]
         mock_run.assert_called_once_with(
-            cmd, output_loglevel="trace", python_shell=False
+            cmd,
+            output_loglevel="trace",
+            python_shell=False,
+            env={"SALT_RUNNING": "1"},
         )
         expected = {"spongebob": f"{cache_dir}/spongebob-1.2.rpm"}
         assert result == expected
